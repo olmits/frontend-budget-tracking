@@ -12,7 +12,11 @@ export class ApiService implements IApiService {
 
     constructor(baseURL: string | undefined) {
         if (!baseURL) {
-        throw new Error("ApiService Error: 'baseURL' is missing.");
+            throw new Error("ApiService Error: 'baseURL' is missing.");
+        }
+
+        if (!baseURL.startsWith('http://') && !baseURL.startsWith('https://')) {
+            throw new Error(`ApiService Error: baseURL '${baseURL}' is invalid. It must start with 'http://' or 'https://'.`);
         }
 
         this.axiosInstance = axios.create({

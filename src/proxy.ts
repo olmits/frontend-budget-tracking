@@ -1,22 +1,23 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export function proxy(request: NextRequest) {
-  const currentUser = request.cookies.get('session')?.value
-  
-  // Define protected routes
-  const protectedRoutes = ['/dashboard']
+const protectedRoutes = ['/dashboard']
+const publicRoutes = ['/login', '/register']
 
-  // Check if the current path is protected
-  if (protectedRoutes.includes(request.nextUrl.pathname)) {
-    // If no user token found, redirect to login
-    if (!currentUser) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
+export function proxy(request: NextRequest) {
+  // 1. Get the token from cookies
+  const token = request.cookies.get('token')?.value
+  
+  const isProtectedRoute = protectedRoutes.some(path => request.nextUrl.pathname.startsWith(path))
+  const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname)
+
+  // If user is on a protected route AND has no token -> Redirect to Login
+  if (isProtectedRoute && !token) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Optional: Redirect / to /dashboard if logged in
-  if (request.nextUrl.pathname === '/' && currentUser) {
+  // If user is on login page AND has a token -> Redirect to Dashboard
+  if (isPublicRoute && token) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

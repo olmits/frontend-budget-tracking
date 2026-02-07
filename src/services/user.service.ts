@@ -1,4 +1,4 @@
-import { IApiService } from "./api.service";
+import { IApiService, apiService } from "./api.service";
 
 
 export interface LoginRequest {
@@ -25,6 +25,7 @@ export class UserService {
     }
 
     async login(data: LoginRequest): Promise<AuthResponse> {
+        console.log("Attempting Login with:", data); // <--- Add this
         return this.api.post<AuthResponse, LoginRequest>('/login', data);
     }
     
@@ -32,3 +33,6 @@ export class UserService {
         return this.api.post<AuthResponse, RegisterRequest>('/register', data);
     }
 }
+
+// Export a singleton instance
+export const userService = new UserService(apiService);
