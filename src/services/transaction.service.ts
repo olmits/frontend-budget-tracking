@@ -1,10 +1,12 @@
+import { TransactionType } from "@/types/category";
+
 import { apiService, IApiService } from "./api.service";
 
 export interface CreateTransactionRequest {
   amount: number;
   description: string;
   category_id: string;
-  type: "income" | "expense";
+  type: TransactionType;
   date: string; // ISO string
 }
 
@@ -12,7 +14,7 @@ export class TransactionService {
   constructor(private api: IApiService) {}
 
   async create(data: CreateTransactionRequest): Promise<void> {
-    return this.api.post("/transactions", data);
+    return this.api.post("/api/v1/transactions", data);
   }
 }
 

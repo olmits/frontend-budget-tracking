@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { Category, categoryService } from "@/services/category.service";
+import { categoryService } from "@/services/category.service";
+import { Category } from "@/types/category";
 
 import TransactionForm from "./_components/TransactionForm";
 

@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { categoryService } from "@/services/category.service";
 import { transactionService } from "@/services/transaction.service";
 import { userService } from "@/services/user.service";
+import { TransactionType } from "@/types/category";
 
 // 1. Strict Type Definition
 export type ActionState = {
@@ -75,23 +76,26 @@ export async function createTransactionAction(
   const amountStr = formData.get("amount") as string;
   const description = formData.get("description") as string;
   const categoryId = formData.get("category_id") as string;
-  const type = formData.get("type") as "income" | "expense";
+  const type = formData.get("type") as TransactionType;
   const date = formData.get("date") as string;
 
+  
   // 2. Basic Validation
   if (!amountStr || !description || !categoryId || !type || !date) {
     return { error: "All fields are required." };
   }
 
-  const amount = parseFloat(amountStr);
-  if (isNaN(amount) || amount <= 0) {
+  const amountFloat = parseFloat(amountStr);
+  const amountInCents = Math.round(amountFloat * 100);
+
+  if (isNaN(amountInCents) || amountInCents <= 0) {
     return { error: "Amount must be a positive number." };
   }
 
   try {
     // 3. Call Backend
     await transactionService.create({
-      amount,
+      amount: amountInCents,
       description,
       category_id: categoryId,
       type,
@@ -116,19 +120,26 @@ export async function createCategoryAction(prevState: any, formData: FormData) {
   "use server";
   
   const name = formData.get("name") as string;
-  const type = formData.get("type") as "income" | "expense";
+  const type = formData.get("type") as "income" | "expense"; // Ensure correct type casting
 
   if (!name || !type) {
     return { error: "Name and Type are required" };
   }
 
   try {
+    // 1. Perform the operation
     await categoryService.create({ name, type });
+
+    // 2. Revalidate the cache (this doesn't throw)
     revalidatePath("/dashboard");
-    // Note: If inside an intercepted route, .back() is usually handled by the UI or router context,
-    // but a redirect here ensures the modal closes and data refreshes.
-    redirect("/dashboard"); 
+    
   } catch (error: any) {
+    // 3. Handle actual errors (DB failure, API down)
+    console.error("Create Category Error:", error);
     return { error: error.message || "Failed to create category" };
   }
+
+  // 4. Redirect MUST be outside the try/catch
+  // If we reached here, it means no error was thrown above.
+  redirect("/dashboard");
 }
