@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { categoryService } from "@/services/category.service";
+import { transactionService } from "@/services/transaction.service";
 import { userService } from "@/services/user.service";
 
 // 1. Strict Type Definition
@@ -64,30 +67,68 @@ export async function registerAction(formData: FormData) {
 }
 
 
-export async function createTransactionAction(formData: FormData) {
-  "use server";
+export async function createTransactionAction(
+  prevState: ActionState, 
+  formData: FormData
+): Promise<ActionState> {
   // 1. Extract Data
-  const amount = formData.get("amount");
-  const description = formData.get("description");
-  
-  // 2. Call Service (TODO: Implement actual service call)
-  console.log("Creating Transaction:", { amount, description });
+  const amountStr = formData.get("amount") as string;
+  const description = formData.get("description") as string;
+  const categoryId = formData.get("category_id") as string;
+  const type = formData.get("type") as "income" | "expense";
+  const date = formData.get("date") as string;
 
-  // 3. Revalidate & Redirect
-  revalidatePath("/dashboard");
-  redirect("/dashboard"); // Go back to the list view
+  // 2. Basic Validation
+  if (!amountStr || !description || !categoryId || !type || !date) {
+    return { error: "All fields are required." };
+  }
+
+  const amount = parseFloat(amountStr);
+  if (isNaN(amount) || amount <= 0) {
+    return { error: "Amount must be a positive number." };
+  }
+
+  try {
+    // 3. Call Backend
+    await transactionService.create({
+      amount,
+      description,
+      category_id: categoryId,
+      type,
+      date: new Date(date).toISOString(), // Ensure ISO format
+    });
+
+    // 4. Success: Revalidate & Redirect
+    // This updates the dashboard stats AND the transaction list immediately
+    revalidatePath("/dashboard");
+    
+   
+  } catch (err: any) {
+    console.error("Create Transaction Error:", err);
+    return { error: err.response?.data?.error || "Failed to create transaction." };
+  }
+
+  // Redirect must happen outside try/catch
+  redirect("/dashboard");
 }
 
-export async function createCategoryAction(formData: FormData) {
+export async function createCategoryAction(prevState: any, formData: FormData) {
   "use server";
-  const name = formData.get("name");
-  const type = formData.get("type");
-
-  console.log("Creating Category:", { name, type });
-
-  revalidatePath("/dashboard");
   
-  // For intercepted routes, .back() is often better than redirect, 
-  // but redirect('/dashboard') works too to close the modal.
-  redirect("/dashboard");
+  const name = formData.get("name") as string;
+  const type = formData.get("type") as "income" | "expense";
+
+  if (!name || !type) {
+    return { error: "Name and Type are required" };
+  }
+
+  try {
+    await categoryService.create({ name, type });
+    revalidatePath("/dashboard");
+    // Note: If inside an intercepted route, .back() is usually handled by the UI or router context,
+    // but a redirect here ensures the modal closes and data refreshes.
+    redirect("/dashboard"); 
+  } catch (error: any) {
+    return { error: error.message || "Failed to create category" };
+  }
 }

@@ -2,7 +2,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { apiService } from "@/services/api.service";
-import { DashboardService } from "@/services/dashboard.service";
+import { DashboardService, DashboardSummary } from "@/services/dashboard.service";
+
+import { MonthlyBarChart, OverviewPieChart } from "./_components/DashboardCharts";
 
 const dashboardService = new DashboardService(apiService);
 
@@ -16,7 +18,7 @@ export default async function DashboardPage() {
   }
 
   // 2. Fetch Data (Server Side)
-  let summary;
+  let summary: DashboardSummary;
   try {
     summary = await dashboardService.getSummary();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,9 +45,46 @@ export default async function DashboardPage() {
   console.log(summary);
 
   return (
-    <div className="min-h-screen p-8 bg-gray-100">
-      <h1 className="text-4xl font-bold">Dashboard (Protected)</h1>
-      <p className="mt-4">You are logged in!</p>
+    <div className="space-y-6">
+      {/* 1. Summary Cards (Existing) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-sm font-medium text-gray-500">Total Income</h3>
+          <p className="mt-2 text-3xl font-bold text-green-600">
+            ${summary.total_income}
+          </p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-sm font-medium text-gray-500">Total Expenses</h3>
+          <p className="mt-2 text-3xl font-bold text-red-600">
+            ${summary.total_expense}
+          </p>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-sm font-medium text-gray-500">Net Balance</h3>
+          <p className={`mt-2 text-3xl font-bold ${summary.net_balance >= 0 ? "text-blue-600" : "text-red-600"}`}>
+            ${summary.net_balance}
+          </p>
+        </div>
+      </div>
+
+      {/* 2. Charts Section (New) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Income vs Expense Ratio */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">Cash Flow Ratio</h3>
+          <OverviewPieChart 
+            income={summary.total_income} 
+            expense={summary.total_expense} 
+          />
+        </div>
+
+        {/* Monthly Trend (Mock Data for now) */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+          <h3 className="text-lg font-bold text-gray-800 mb-4">Monthly Trends</h3>
+          <MonthlyBarChart />
+        </div>
+      </div>
     </div>
   );
 }

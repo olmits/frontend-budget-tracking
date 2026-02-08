@@ -34,5 +34,4 @@ export class UserService {
   }
 }
 
-// Export a singleton instance
 export const userService = new UserService(apiService);

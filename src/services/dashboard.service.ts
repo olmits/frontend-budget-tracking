@@ -2,7 +2,7 @@ import { IApiService } from "./api.service";
 
 export interface DashboardSummary {
   total_income: number;
-  total_expenses: number;
+  total_expense: number;
   net_balance: number;
 }
 
