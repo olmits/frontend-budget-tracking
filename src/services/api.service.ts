@@ -42,6 +42,31 @@ export class ApiService implements IApiService {
     (error) => {
       return Promise.reject(error);
     });
+
+    this.axiosInstance.interceptors.response.use(
+      (response) => response, // Return success responses as-is
+      async (error) => {
+        // Check for 401 Unauthorized
+        if (error.response?.status === 401) {
+          // logic A: server-side (Next.js server component)
+          // We throw the error so the Page Component (Step 1) can catch it and redirect.
+          if (typeof window === "undefined") {
+            return Promise.reject(error);
+          }
+
+          // logic B: client-side (Browser)
+          // We can forcefully redirect the browser
+          console.log("Session expired. Redirecting...");
+          
+          // Optional: Delete cookie client-side if not httpOnly (usually it is httpOnly though)
+          // document.cookie = "token=; Max-Age=0; path=/;";
+
+          window.location.href = "/login?error=SessionExpired";
+        }
+        
+        return Promise.reject(error);
+      }
+    );
   }
     
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {

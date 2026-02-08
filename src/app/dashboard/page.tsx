@@ -19,12 +19,28 @@ export default async function DashboardPage() {
   let summary;
   try {
     summary = await dashboardService.getSummary();
-    console.log("test", summary);
-  } catch {
-    // Handle API errors (e.g., backend down)
-    return <div className="p-8 text-red-500">Error loading dashboard data. is the Backend running?</div>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    // 3. Handle 401 (Invalid Token) from Backend
+    if (error.response?.status === 401) {
+      // ✅ FIX: Redirect to the Route Handler instead of deleting cookie here
+      redirect("/api/logout"); 
+    }
+
+    // Handle other errors (Backend down, 500, etc.)
+    return (
+      <div className="p-8 text-red-600 bg-red-50 min-h-screen flex items-center justify-center">
+        <div>
+          <h2 className="text-2xl font-bold">Something went wrong</h2>
+          <p className="mt-2 text-gray-700">
+            {error.response?.data?.error || "Could not load dashboard data."}
+          </p>
+        </div>
+      </div>
+    );
   }
 
+  console.log(summary);
 
   return (
     <div className="min-h-screen p-8 bg-gray-100">
