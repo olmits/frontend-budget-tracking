@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -60,4 +61,33 @@ export async function registerAction(formData: FormData) {
   }
 
   redirect("/login");
+}
+
+
+export async function createTransactionAction(formData: FormData) {
+  "use server";
+  // 1. Extract Data
+  const amount = formData.get("amount");
+  const description = formData.get("description");
+  
+  // 2. Call Service (TODO: Implement actual service call)
+  console.log("Creating Transaction:", { amount, description });
+
+  // 3. Revalidate & Redirect
+  revalidatePath("/dashboard");
+  redirect("/dashboard"); // Go back to the list view
+}
+
+export async function createCategoryAction(formData: FormData) {
+  "use server";
+  const name = formData.get("name");
+  const type = formData.get("type");
+
+  console.log("Creating Category:", { name, type });
+
+  revalidatePath("/dashboard");
+  
+  // For intercepted routes, .back() is often better than redirect, 
+  // but redirect('/dashboard') works too to close the modal.
+  redirect("/dashboard");
 }
