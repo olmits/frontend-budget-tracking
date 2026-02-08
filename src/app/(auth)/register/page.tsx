@@ -1,5 +1,6 @@
-import Link from 'next/link'
-import { registerAction } from '@/app/actions'
+import Link from "next/link";
+
+import { registerAction } from "@/app/actions";
 
 export default function RegisterPage() {
   return (
@@ -53,12 +54,12 @@ export default function RegisterPage() {
         </form>
 
         <p className="text-sm text-center text-gray-600">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
             Sign in
           </Link>
         </p>
       </div>
     </div>
-  )
+  );
 }
