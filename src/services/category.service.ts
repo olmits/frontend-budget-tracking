@@ -17,7 +17,7 @@ export class CategoryService {
   // Fetch all categories for the current user
   async list() {
     const responseData = await this.api.get<GetCategoriesResponse>("/api/v1/categories");
-    return responseData.data;
+    return responseData.data ?? [];
   }
 
   // Create a new category

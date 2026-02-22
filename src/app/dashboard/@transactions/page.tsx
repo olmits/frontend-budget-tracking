@@ -1,15 +1,15 @@
 import Link from "next/link";
 
-// Mock data for now (or fetch from API)
-async function getTransactions() {
-  return [
-    { id: 1, amount: -50, description: "Groceries" },
-    { id: 2, amount: 2000, description: "Salary" },
-  ];
-}
+import { Transaction, transactionService } from "@/services/transaction.service";
 
 export default async function TransactionsSlot() {
-  const transactions = await getTransactions();
+  let transactions: Transaction[] = [];
+  try {
+    transactions = await transactionService.getAll();
+  } catch (error) {
+    console.error("Failed to fetch transactions:", error);
+    // You could render an error state here
+  }
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-full">

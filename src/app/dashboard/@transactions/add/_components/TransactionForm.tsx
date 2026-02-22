@@ -12,8 +12,28 @@ export default function TransactionForm({ categories }: { categories: Category[]
   // 1. State to track the active transaction type (Default: 'expense')
   const [activeType, setActiveType] = useState<TransactionType>("expense");
 
-  // 2. Derived state: Filter categories based on the active type
+  const safeCategories = Array.isArray(categories) ? categories : [];
   const filteredCategories = categories.filter((c) => c.type === activeType);
+
+  if (safeCategories.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <div className="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-medium text-gray-900">No categories yet</h3>
+        <p className="text-gray-500 mt-2 mb-6 text-sm">You need at least one category to record a transaction.</p>
+        <Link 
+          href="/dashboard/categories/add"
+          className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+        >
+          Create Your First Category
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="space-y-4">

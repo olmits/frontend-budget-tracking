@@ -11,6 +11,10 @@ export function proxy(request: NextRequest) {
   const isProtectedRoute = protectedRoutes.some((path) => request.nextUrl.pathname.startsWith(path));
   const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname);
 
+  if (request.nextUrl.pathname === "/") {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
   // If user is on a protected route AND has no token -> Redirect to Login
   if (isProtectedRoute && !token) {
     return NextResponse.redirect(new URL("/login", request.url));

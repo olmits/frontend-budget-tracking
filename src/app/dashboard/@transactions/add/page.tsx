@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import ErrorContent from "@/components/ErrorContent";
 import { categoryService } from "@/services/category.service";
 import { Category } from "@/types/category";
 
@@ -13,7 +14,9 @@ export default async function AddTransactionPage() {
     categories = await categoryService.list();
   } catch (error) {
     console.error("Failed to load categories:", error);
-    // You might want to handle this gracefully or show an empty list
+    return (
+      <ErrorContent />
+    );
   }
 
   return (
