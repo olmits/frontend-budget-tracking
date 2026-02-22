@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import ErrorContent from "@/components/ErrorContent";
 import { categoryService } from "@/services/category.service";
 import { Category } from "@/types/category";
 
@@ -8,16 +7,7 @@ import TransactionForm from "./_components/TransactionForm";
 
 
 export default async function AddTransactionPage() {
-  // Fetch categories server-side
-  let categories: Category[] = [];
-  try {
-    categories = await categoryService.list();
-  } catch (error) {
-    console.error("Failed to load categories:", error);
-    return (
-      <ErrorContent />
-    );
-  }
+  const categories: Category[] = await categoryService.list();
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-full">
